@@ -19,6 +19,8 @@ from reconstruction import reconstruction
 from detection import detection
 from pathlib import Path
 from utils import ccc_loss
+import tensorflow as tf
+import random
 
 
 def main(
@@ -33,6 +35,8 @@ def main(
 ):
     start_time = time.time()
     np.random.seed(seed)
+    tf.random.set_seed(seed)
+    random.seed(seed)
 
     anomaly_files = [
         os.path.join(anomaly_path, file) for file in os.listdir(anomaly_path)
@@ -150,7 +154,7 @@ if __name__ == "__main__":
                         default="mel", choices=["mel", "ifgram"])
     parser.add_argument("--loss", type=str, default="mse",
                         choices=["mse", "ccc"])
-    parser.add_argument("--plot", type=bool, default=False)
+    parser.add_argument("--plot", action="store_true")
     parser.add_argument("--seed", type=int, default=42)
     args = parser.parse_args()
     # print args information
