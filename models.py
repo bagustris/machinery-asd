@@ -10,9 +10,11 @@ def autoencoder_baseline(input_dims):
     # Encoder block
     x = Dense(128, activation="relu")(inputLayer)
     x = Dense(64, activation="relu")(x)
-    # Latent space
     x = Dense(32, activation="relu")(x)
+    # Latent space
+    x = Dense(8, activation="relu")(x)
     # Decoder block
+    x = Dense(32, activation="relu")(x)
     x = Dense(64, activation="relu")(x)
     x = Dense(128, activation="relu")(x)
     # Output layer

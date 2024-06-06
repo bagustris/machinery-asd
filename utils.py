@@ -1,32 +1,34 @@
 from tqdm import tqdm
 import librosa
 import numpy as np
-
+import tensorflow as tf
+import logger
+import pickle
 # Function to generate training dataset
 
 
-def generate_dataset(files_list, n_mels=64, frames=5, n_fft=1024, hop_length=512):
+def generate_dataset(files_list, n_mels=64, frames=5,
+                     n_fft=1024, hop_length=512):
     # Number of dimensions for each frame:
     dims = n_mels * frames
 
-    for index in tqdm(range(len(files_list)), desc='Extracting features'):
+    dataset = None
+    for index in tqdm(range(len(files_list)), desc="Extracting features"):
         # Load signal
         signal, sr = load_sound_file(files_list[index])
 
         # Extract features from this signal:
         features = extract_signal_features(
-            signal,
-            sr,
-            n_mels=n_mels,
-            frames=frames,
-            n_fft=n_fft)
+            signal, sr, n_mels=n_mels, frames=frames, n_fft=n_fft
+        )
 
-        if index == 0:
+        if dataset is None:
             dataset = np.zeros(
                 (features.shape[0] * len(files_list), dims), np.float32)
 
-        dataset[features.shape[0] * index: features.shape[0]
-                * (index + 1), :] = features
+        dataset[features.shape[0] * index: features.shape[0] * (index + 1), :] = (
+            features
+        )
 
     return dataset
 
@@ -59,12 +61,61 @@ def extract_signal_features(signal, sr, n_mels=64, frames=5, n_fft=1024):
 
     return features
 
-# Load sound file
 
-
-def load_sound_file(wav_name, mono=False, channel=0):
-    multi_channel_data, sampling_rate = librosa.load(
-        wav_name, sr=None, mono=mono)
-    signal = np.array(multi_channel_data)[channel, :]
+def load_sound_file(wav_name, mono=False):
+    # Load sound file
+    signal, sampling_rate = librosa.load(wav_name, sr=None, mono=mono)
 
     return signal, sampling_rate
+
+
+def save_pickle(filename, save_data):
+    """
+    picklenize the data.
+
+    filename : str
+        pickle filename
+    data : free datatype
+        some data will be picklenized
+
+    return : None
+    """
+    logger.info("save_pickle -> {}".format(filename))
+    with open(filename, 'wb') as sf:
+        pickle.dump(save_data, sf)
+
+
+def load_pickle(filename):
+    """
+    unpicklenize the data.
+
+    filename : str
+        pickle filename
+
+    return : data
+    """
+    logger.info("load_pickle <- {}".format(filename))
+    with open(filename, 'rb') as lf:
+        load_data = pickle.load(lf)
+    return load_data
+
+
+def ccc_loss(y_true, y_pred):
+    """Calculate cordordance loss function"""
+    # Mean of ground truth and predicted values
+    y_true_mean = tf.reduce_mean(y_true)
+    y_pred_mean = tf.reduce_mean(y_pred)
+
+    # Calculate covariance
+    covariance = tf.reduce_mean(
+        (y_true - y_true_mean) * (y_pred - y_pred_mean))
+
+    # Calculate variances
+    y_true_var = tf.math.reduce_variance(y_true)
+    y_pred_var = tf.math.reduce_variance(y_pred)
+
+    # Calculate CCC
+    ccc = 2 * covariance / (y_true_var + y_pred_var +
+                            (y_true_mean - y_pred_mean) ** 2)
+
+    return 1 - ccc
