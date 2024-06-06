@@ -9,7 +9,7 @@ First, you need to download IDMT and MIMII dataset. You can place anywhere, and 
 IDMT works out of the box. You only need to run `baseline_model.py`.
 
 ```bash
-$ python baselin_model.py
+$ python baseline_model.py
 
 The error threshold is set to be:  105.20362167358398
               precision    recall  f1-score   support
@@ -27,6 +27,7 @@ Confusion Matrix
 AUC:  0.7904199961787878
 PAUC:  0.5313513900398861
 Execution time: 46.87 seconds
+```
 
 References:  
 
