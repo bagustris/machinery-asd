@@ -1,50 +1,72 @@
 
 
-from sklearn.metrics import roc_auc_score
+import argparse
 import os
-import numpy as np
+import random
 import time
+
+import numpy as np
+import tensorflow as tf
 
 # import matplotlib.pyplot as plt
 from matplotlib import pyplot as plt
-from models import autoencoder_baseline_mel
+from sklearn.metrics import roc_auc_score
 from tensorflow.keras.optimizers import Adam
-from utils import generate_dataset
-from reconstruction import reconstruction
-from detection import detection
-from utils import ccc_loss
-import tensorflow as tf
-import random
-import argparse
 
-def load_idmt_dataset(normal_path, anomaly_path, test_path_normal, test_path_anomaly):
-    anomaly_files = [os.path.join(anomaly_path, file) for file in os.listdir(anomaly_path)]
-    normal_files = [os.path.join(normal_path, file) for file in os.listdir(normal_path)]
-    
+from detection import detection
+from models import autoencoder_baseline_mel
+from reconstruction import reconstruction
+from utils import ccc_loss, generate_dataset
+
+
+def load_idmt_dataset(
+        normal_path,
+        anomaly_path,
+        test_path_normal,
+        test_path_anomaly):
+    anomaly_files = [os.path.join(anomaly_path, file)
+                     for file in os.listdir(anomaly_path)]
+    normal_files = [os.path.join(normal_path, file)
+                    for file in os.listdir(normal_path)]
+
     train_files = normal_files + anomaly_files
-    
-    test_files_normal = [os.path.join(test_path_normal, file) for file in os.listdir(test_path_normal)]
+
+    test_files_normal = [
+        os.path.join(
+            test_path_normal,
+            file) for file in os.listdir(test_path_normal)]
     test_labels_normal = [0 for file in test_files_normal]
-    test_files_abnormal = [os.path.join(test_path_anomaly, file) for file in os.listdir(test_path_anomaly)]
+    test_files_abnormal = [
+        os.path.join(
+            test_path_anomaly,
+            file) for file in os.listdir(test_path_anomaly)]
     test_labels_abnormal = [1 for file in test_files_abnormal]
     test_files = test_files_normal + test_files_abnormal
     test_labels = test_labels_normal + test_labels_abnormal
     test_labels = np.array(test_labels)
-    
+
     return train_files, test_files, test_labels
 
+
 def load_mimii_dataset(normal_path, anomaly_path):
-    anomaly_files = [os.path.join(anomaly_path, file) for file in os.listdir(anomaly_path)]
-    normal_files = [os.path.join(normal_path, file) for file in os.listdir(normal_path)]
-    
+    anomaly_files = [os.path.join(anomaly_path, file)
+                     for file in os.listdir(anomaly_path)]
+    normal_files = [os.path.join(normal_path, file)
+                    for file in os.listdir(normal_path)]
+
     test_files = normal_files[-len(anomaly_files):] + anomaly_files
-    test_labels = np.hstack((np.zeros(len(anomaly_files)), np.ones(len(anomaly_files))))
+    test_labels = np.hstack(
+        (np.zeros(
+            len(anomaly_files)), np.ones(
+            len(anomaly_files))))
     train_files = normal_files[:-len(anomaly_files)] + anomaly_files
-    
+
     return train_files, test_files, test_labels
+
 
 def extract_features(files, feature, n_mels, frames, n_fft, hop_length):
     return generate_dataset(files, feature, n_mels, frames, n_fft, hop_length)
+
 
 def main(dataset, feature, loss, plot, seed):
     start_time = time.time()
@@ -66,9 +88,11 @@ def main(dataset, feature, loss, plot, seed):
     }
 
     if dataset == "idmt":
-        train_files, test_files, test_labels = load_idmt_dataset(**dataset_paths[dataset])
+        train_files, test_files, test_labels = load_idmt_dataset(
+            **dataset_paths[dataset])
     elif dataset == "mimii":
-        train_files, test_files, test_labels = load_mimii_dataset(**dataset_paths[dataset])
+        train_files, test_files, test_labels = load_mimii_dataset(
+            **dataset_paths[dataset])
     else:
         raise ValueError("Invalid dataset")
 
@@ -77,35 +101,48 @@ def main(dataset, feature, loss, plot, seed):
     frames = 5
     n_fft = 1024
     hop_length = 512
-    train_data = extract_features(train_files, feature, n_mels, frames, n_fft, hop_length)
+    train_data = extract_features(
+        train_files,
+        feature,
+        n_mels,
+        frames,
+        n_fft,
+        hop_length)
 
     # Model design and compilation
     input_shape = train_data.shape[-1]
-    
+
     loss_functions = {
         "mse": "mean_squared_error",
-        "ccc": ccc_loss
+        "ccc": ccc_loss,
+        "mae": "mean_absolute_error",
+        "mape": "mean_absolute_percentage_error",
     }
-    
+
     if loss not in loss_functions:
         raise ValueError("Invalid loss function")
-    
+
     model_loss = loss_functions[loss]
-    
+
     lr = 1e-3
     batch_size = 512
     epochs = 30
-    
+
     if feature == "mel":
         baseline_model = autoencoder_baseline_mel(input_shape)
     elif feature == "reassigned":
         baseline_model = autoencoder_baseline_mel(input_shape)
-    
+
     baseline_model.compile(loss=model_loss, optimizer=Adam(learning_rate=lr))
     baseline_model.summary()
 
     # Model training
-    baseline_hist = baseline_model.fit(train_data, train_data, batch_size=batch_size, epochs=epochs, verbose=2)
+    baseline_hist = baseline_model.fit(
+        train_data,
+        train_data,
+        batch_size=batch_size,
+        epochs=epochs,
+        verbose=2)
 
     # Plot model loss
     if plot:
@@ -118,7 +155,15 @@ def main(dataset, feature, loss, plot, seed):
 
     # Perform reconstruction using the test data files and calculate mse error
     print(f"Performing reconstruction on test data using feature: {feature}")
-    reconstruction_errors = reconstruction(baseline_model, test_files, test_labels, feature, n_mels, frames, n_fft, plot)
+    reconstruction_errors = reconstruction(
+        baseline_model,
+        test_files,
+        test_labels,
+        feature,
+        n_mels,
+        frames,
+        n_fft,
+        plot)
 
     # Perform detection and evaluate model performance
     detection(reconstruction_errors, test_labels, dataset, plot)
@@ -135,12 +180,36 @@ def main(dataset, feature, loss, plot, seed):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Baseline model for anomaly detection")
-    parser.add_argument("--dataset", type=str, default="idmt", choices=["idmt", "mimii"], help="Dataset to use for training and testing")
-    parser.add_argument("--feature", type=str, default="mel", choices=["mel", "reassinged"], help="Feature type to use for training and testing")
-    parser.add_argument("--loss", type=str, default="mse", choices=["mse", "ccc"], help="Loss function to use for training the model")
-    parser.add_argument("--plot", action="store_true", help="Flag to plot the training loss")
-    parser.add_argument("--seed", type=int, default=42, help="Seed for reproducibility")
+    parser = argparse.ArgumentParser(
+        description="Baseline model for anomaly detection")
+    parser.add_argument(
+        "--dataset",
+        type=str,
+        default="idmt",
+        choices=[
+            "idmt",
+            "mimii"],
+        help="Dataset to use for training and testing")
+    parser.add_argument(
+        "--feature",
+        type=str,
+        default="mel",
+        choices=[
+            "mel",
+            "reassinged"],
+        help="Feature type to use for training and testing")
+    parser.add_argument(
+        "--loss",
+        type=str,
+        default="mse",
+        choices=["mse", "ccc", "mae", "mape"],
+        help="Loss function to use for training the model")
+    parser.add_argument(
+        "--plot",
+        action="store_true",
+        help="Flag to plot the training loss")
+    parser.add_argument("--seed", type=int, default=42,
+                        help="Seed for reproducibility")
     args = parser.parse_args()
 
     main(args.dataset, args.feature, args.loss, args.plot, args.seed)
