@@ -1,6 +1,7 @@
 
 
 import argparse
+import logging
 import os
 import random
 import time
@@ -18,12 +19,15 @@ from models import autoencoder_baseline_mel
 from reconstruction import reconstruction
 from utils import ccc_loss, generate_dataset
 
+logger = logging.getLogger(__name__)
+
 
 def load_idmt_dataset(
         normal_path,
         anomaly_path,
         test_path_normal,
         test_path_anomaly):
+
     anomaly_files = [os.path.join(anomaly_path, file)
                      for file in os.listdir(anomaly_path)]
     normal_files = [os.path.join(normal_path, file)
@@ -69,6 +73,10 @@ def extract_features(files, feature, n_mels, frames, n_fft, hop_length):
 
 
 def main(dataset, feature, loss, plot, seed):
+    logging.basicConfig(
+        filename=f'log/{dataset}_{feature}_{loss}_{seed}.log',
+        level=logging.INFO)
+    logger.info('Started')
     start_time = time.time()
     np.random.seed(seed)
     tf.random.set_seed(seed)
@@ -144,6 +152,8 @@ def main(dataset, feature, loss, plot, seed):
         epochs=epochs,
         verbose=2)
 
+    # log loss history
+    logger.info(f"Training loss: {baseline_hist.history['loss']}")
     # Plot model loss
     if plot:
         plt.figure(figsize=(8, 5), dpi=100)
@@ -177,6 +187,11 @@ def main(dataset, feature, loss, plot, seed):
     end_time = time.time()
     execution_time = end_time - start_time
     print(f"Execution time: {execution_time:.2f} seconds")
+    # save auc, pauc, execution time into log
+    logger.info(f"AUC: {auc}")
+    logger.info(f"PAUC: {pauc}")
+    logger.info(f"Execution time: {execution_time:.2f} seconds")
+    logger.info('Finished')
 
 
 if __name__ == "__main__":

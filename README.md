@@ -35,15 +35,15 @@ PAUC:  0.5313513900398861
 Execution time: 46.87 seconds
 ```
 
-I you want to evaluate MIMII dataset, then use argument `--dataset mimii`. If you want to use CCC loss function, then use argument `--loss ccc`. Finally there is an option to use reassigned spectrogram feature in addition to melspectrogram. Use argument`--feature reassigned`. By default loss history, ditribution of errors and confusion matrix are not shown. Use argument`--plot` to show these figures.
+If you want to evaluate MIMII dataset, then use argument `--dataset mimii`. If you want to use CCC loss function, then use argument `--loss ccc`. Finally there is an option to use reassigned spectrogram feature in addition to melspectrogram. Use argument`--feature reassigned`. By default loss history, ditribution of errors and confusion matrix are not shown. Use argument`--plot` to show these figures.
 
 ```bash
 $ python baseline4.py --dataset mimii --loss ccc --feature reassigned
 
 # Options:
-  --dataset DATASET  Dataset to use for training and testing
-  --feature FEATURE  Feature type to use for training and testing
-  --loss LOSS        Loss function to use for training the model
+  --dataset DATASET  Dataset to use for training and testing  {idmt, mimii}
+  --feature FEATURE  Feature type to use for training and testing {mel, reassigned}
+  --loss LOSS        Loss function to use for training the model {mse, ccc, mae, mape}
   --plot             Flag to plot the training loss
   --seed SEED        Seed number
 ```
