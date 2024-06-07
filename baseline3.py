@@ -15,7 +15,7 @@ from sklearn.metrics import roc_auc_score
 from tensorflow.keras.optimizers import Adam
 
 from detection import detection
-from models import autoencoder_baseline
+from models import autoencoder_baseline_mel, autoencoder_baseline_reassigned
 from reconstruction import reconstruction
 from utils import ccc_loss, generate_dataset
 
@@ -80,12 +80,12 @@ def main(
     n_fft = 1024
     hop_length = 512
     train_data = generate_dataset(
-        train_files, n_mels, frames, n_fft, hop_length)
+        train_files, feature, n_mels, frames, n_fft, hop_length)
 
     # model design and compilation
     # Set model parameters
     # Shape of the input data
-    input_shape = n_mels * frames
+    input_shape = train_data.shape[-1]
     # Loss function
     if loss == "mse":
         model_loss = "mean_squared_error"
@@ -100,7 +100,11 @@ def main(
     batch_size = 512
     epochs = 30
     # Create the baseline model and compile it with the hyperparameters
-    baseline_model = autoencoder_baseline(input_shape)
+    if feature == "mel":
+        baseline_model = autoencoder_baseline_mel(input_shape)
+    elif feature == "reassigned":
+        baseline_model = autoencoder_baseline_reassigned(input_shape)
+
     baseline_model.compile(loss=model_loss, optimizer=Adam(learning_rate=lr))
     # Print model summary
     baseline_model.summary()
@@ -121,9 +125,11 @@ def main(
         plt.show()
 
     # Perform reconstruction using the test data files and calculate mse error
-    # scores
+    print(
+        f"Performing reconstruction on test data using feature: {feature}"
+    )
     reconstruction_errors = reconstruction(
-        baseline_model, test_files, test_labels, n_mels, frames, n_fft, plot
+        baseline_model, test_files, test_labels, feature, n_mels, frames, n_fft, plot
     )
 
     # Perform detection and evaluate model performance
@@ -150,7 +156,7 @@ if __name__ == "__main__":
         default="idmt",
         choices=["idmt", "mimii"])
     parser.add_argument("--feature", type=str,
-                        default="mel", choices=["mel", "ifgram"])
+                        default="mel", choices=["mel", "reassigned"])
     parser.add_argument("--loss", type=str, default="mse",
                         choices=["mse", "ccc"])
     parser.add_argument("--plot", action="store_true")

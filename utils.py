@@ -7,20 +7,30 @@ import pickle
 # Function to generate training dataset
 
 
-def generate_dataset(files_list, n_mels=64, frames=5,
+def generate_dataset(files_list, feature="mel", n_mels=64, frames=5,
                      n_fft=1024, hop_length=512):
-    # Number of dimensions for each frame:
-    dims = n_mels * frames
-
+    if feature == "mel":
+        dims = n_mels * frames
+    elif feature == "reassigned":
+        dims = 517             # 513/517 is from error message
+    else:
+        raise ValueError("Invalid feature type. Choose 'mel' or 'reassigned'")
+    
     dataset = None
     for index in tqdm(range(len(files_list)), desc="Extracting features"):
         # Load signal
         signal, sr = load_sound_file(files_list[index])
 
-        # Extract features from this signal:
-        features = extract_signal_features(
-            signal, sr, n_mels=n_mels, frames=frames, n_fft=n_fft
-        )
+        if feature == "mel":
+            # Extract melspectrogram from this signal:
+            features = extract_signal_features(
+                signal, sr, n_mels=n_mels, frames=frames, n_fft=n_fft
+            )
+
+        elif feature == "reassigned":
+            features = extract_reassigned_freqs(
+                signal, sr, frames=frames, n_fft=n_fft
+            )
 
         if dataset is None:
             dataset = np.zeros(
@@ -121,3 +131,24 @@ def ccc_loss(y_true, y_pred):
                             (y_true_mean - y_pred_mean) ** 2)
 
     return 1 - ccc
+
+
+def extract_reassigned_freqs(y, sr, frames=5, n_fft=1024):
+    freqs, times, mags = librosa.reassigned_spectrogram(
+        y=y, sr=sr, n_fft=1024)
+
+    mags_db = librosa.amplitude_to_db(mags, ref=np.max)
+
+    # features_vector_size = mags_db.shape[1] - frames + 1
+
+    # # skip short signals
+    # dims = frames * mags_db.shape[0]
+    # if features_vector_size < 1:
+    #     return np.empty((0, dims), np.float32)
+    
+    # # Build N sliding windows can concatenate them to build feature vector
+    # features = np.zeros((features_vector_size, dims), np.float32)
+    # for t in range(frames):
+    #     features[:,  mags_db.shape[0] * t:  mags_db.shape[0] * (t + 1)] = mags_db[:, t:t + features_vector_size].T
+
+    return mags_db

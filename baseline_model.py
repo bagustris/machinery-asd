@@ -14,7 +14,7 @@ import time
 from matplotlib import pyplot as plt
 from models import autoencoder_baseline
 from tensorflow.keras.optimizers import Adam
-from utils import generate_dataset, load_sound_file
+from utils import generate_dataset
 from reconstruction import reconstruction
 from detection import detection
 from pathlib import Path

@@ -1,12 +1,12 @@
 # Import required packages
 import numpy as np
-from utils import extract_signal_features
+from utils import extract_reassigned_freqs, extract_signal_features
 from tqdm import tqdm
 from utils import load_sound_file
 import matplotlib.pyplot as plt
 
 
-def reconstruction(model, test_files, test_labels, n_mels, frames, n_fft, plot):
+def reconstruction(model, test_files, test_labels, feature, n_mels, frames, n_fft, plot):
     """
     Reconstructs the input features using a trained autoencoder model and calculates the reconstruction errors for the test set.
 
@@ -14,6 +14,7 @@ def reconstruction(model, test_files, test_labels, n_mels, frames, n_fft, plot):
         model (keras.Model): The trained autoencoder model.
         test_files (list): A list of file paths for the test audio files.
         test_labels (list): A list of labels (0 for normal, 1 for anomaly) for the test audio files.
+        feature (str): The type of feature to use for extraction. Choose between 'mel' and 'reassigned'.
         n_mels (int): The number of mel-frequency bands to use for feature extraction.
         frames (int): The number of frames to use for feature extraction.
         n_fft (int): The number of FFT bins to use for feature extraction.
@@ -29,9 +30,17 @@ def reconstruction(model, test_files, test_labels, n_mels, frames, n_fft, plot):
     eval_features_list = []
     for eval_filename in test_files:
         signal, sr = load_sound_file(eval_filename)
-        eval_features = extract_signal_features(
-            signal, sr, n_mels=n_mels, frames=frames, n_fft=n_fft
-        )
+        if feature == "mel":
+            eval_features = extract_signal_features(
+                signal, sr, n_mels=n_mels, frames=frames, n_fft=n_fft
+            )
+        elif feature == "reassigned":
+            eval_features = extract_reassigned_freqs(
+                signal, sr, frames=frames, n_fft=n_fft
+            )
+        else:
+            raise ValueError(
+                "Invalid feature type. Choose 'mel' or 'reassigned'")
         eval_features_list.append(eval_features)
 
     # Get predictions from our autoencoder in batches
