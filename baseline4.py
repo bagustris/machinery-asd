@@ -1,4 +1,4 @@
-
+#!/usr/bin/env python
 
 import argparse
 import logging
@@ -75,8 +75,9 @@ def extract_features(files, feature, n_mels, frames, n_fft, hop_length):
 def main(dataset, feature, loss, plot, seed):
     logging.basicConfig(
         filename=f'log/{dataset}_{feature}_{loss}_{seed}.log',
+        format='%(asctime)s %(message)s',
         level=logging.INFO)
-    logger.info('Started')
+    logger.info('==================Started==================')
     start_time = time.time()
     np.random.seed(seed)
     tf.random.set_seed(seed)
@@ -191,7 +192,7 @@ def main(dataset, feature, loss, plot, seed):
     logger.info(f"AUC: {auc}")
     logger.info(f"PAUC: {pauc}")
     logger.info(f"Execution time: {execution_time:.2f} seconds")
-    logger.info('Finished')
+    logger.info('==================Finished==================')
 
 
 if __name__ == "__main__":
@@ -211,7 +212,7 @@ if __name__ == "__main__":
         default="mel",
         choices=[
             "mel",
-            "reassinged"],
+            "reassigned"],
         help="Feature type to use for training and testing")
     parser.add_argument(
         "--loss",
