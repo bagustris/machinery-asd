@@ -73,8 +73,11 @@ def extract_features(files, feature, n_mels, frames, n_fft, hop_length):
 
 
 def main(dataset, feature, loss, plot, seed):
+    log_dir = "log"
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
     logging.basicConfig(
-        filename=f'log/{dataset}_{feature}_{loss}_{seed}.log',
+        filename=f'{log_dir}/{dataset}_{feature}_{loss}_{seed}.log',
         format='%(asctime)s %(message)s',
         level=logging.INFO)
     logger.info('==================Started==================')
