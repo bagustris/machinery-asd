@@ -2,8 +2,8 @@
 
 ## Downloading dataset
 
-First, you need to download IDMT and MIMII dataset. I located these data
-inside `data`. Directory, if you locate elsewhere, you need to adjust those paths.
+First, you need to download the IDMT and MIMII datasets. I located these data
+inside `data` directory. If you locate them elsewhere, you need to adjust those paths (in `baseline.py`).
 
 Link for download:  
 
@@ -35,7 +35,7 @@ PAUC:  0.5313513900398861
 Execution time: 46.87 seconds
 ```
 
-If you want to evaluate MIMII dataset, then use argument `--dataset mimii`. If you want to use CCC loss function, then use argument `--loss ccc`. Finally there is an option to use reassigned spectrogram feature in addition to melspectrogram. Use argument`--feature reassigned`. By default loss history, ditribution of errors and confusion matrix are not shown. Use argument`--plot` to show these figures.
+If you want to evaluate the MIMII dataset, then use the argument `--dataset mimii`. If you want to use CCC loss function, then use argument `--loss ccc`. Finally, there is an option to use reassigned spectrogram feature in addition to the melspectrogram. Use argument`--feature reassigned`. By default, loss history, distribution of errors, and confusion matrix are not shown. Use argument`--plot` to show these figures.
 
 ```bash
 $ python baseline4.py --dataset mimii --loss ccc --feature reassigned
