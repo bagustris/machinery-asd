@@ -1,5 +1,5 @@
 #!/bin/bash
-datasets=("imdt" "mimii")
+datasets=("idmt" "mimii")
 features=("mel" "reassigned")
 losses=("mse" "ccc" "mae" "mape")
 
@@ -9,5 +9,7 @@ for dataset in ${datasets[@]}; do
             for ((i=1; i<=5; i++)); do
                 echo "Running $dataset $feature $loss #$i"
                 python baseline4.py --dataset $dataset --feature $feature --loss $loss
+            done
         done
     done
+done
