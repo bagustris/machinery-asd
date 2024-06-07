@@ -62,10 +62,12 @@ def extract_signal_features(signal, sr, n_mels=64, frames=5, n_fft=1024):
     return features
 
 
-def load_sound_file(wav_name, mono=False):
+def load_sound_file(wav_name, mono=False, channel=0):
     # Load sound file
     signal, sampling_rate = librosa.load(wav_name, sr=None, mono=mono)
-
+    # check if signal is multichannel, get first channel only
+    if signal.ndim > 1:
+        signal = signal[channel]
     return signal, sampling_rate
 
 

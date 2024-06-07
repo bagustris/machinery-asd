@@ -4,14 +4,17 @@ import seaborn as sns
 import numpy as np
 
 
-def detection(errs, test_labels, plot_cm=False):
+def detection(errs, test_labels, dataset, plot=False):
 
     # Target labels
     target_labels = ["Normal", "Anomaly"]
 
     # Set threshold to be 10% more than the mean on normal sound signals
     # 669 is number of normal sound signals
-    normal_len = 669
+    if dataset == "idmt":
+        normal_len = 669
+    elif dataset == "mimii":
+        normal_len = 120
     thresh = np.mean(errs[:normal_len]) + 0.1*np.mean(errs[:normal_len])
 
     # Print the error threshold
@@ -29,7 +32,7 @@ def detection(errs, test_labels, plot_cm=False):
     print(confusion_matrix(test_labels, pred_labels))
 
     # Plot the confusion matrix
-    if plot_cm:
+    if plot:
         cm = confusion_matrix(test_labels, pred_labels)
         ax = sns.heatmap(cm, annot=True, fmt="d", cmap="Blues")
         plt.xlabel("Predicted")

@@ -133,22 +133,22 @@ if __name__ == "__main__":
     parser.add_argument(
         "--normal_path",
         type=Path,
-        default="/home/bagus/data/IDMT/train_cut/engine1_good",
+        default="/home/bagus/data/idmt/train_cut/engine1_good",
     )
     parser.add_argument(
         "--anomaly_path",
         type=Path,
-        default="/home/bagus/data/IDMT/train_cut/engine2_broken",
+        default="/home/bagus/data/idmt/train_cut/engine2_broken",
     )
     parser.add_argument(
         "--test_path_normal",
         type=Path,
-        default="/home/bagus/data/IDMT/test_cut/engine1_good",
+        default="/home/bagus/data/idmt/test_cut/engine1_good",
     )
     parser.add_argument(
         "--test_path_anomaly",
         type=Path,
-        default="/home/bagus/data/IDMT/test_cut/engine2_broken",
+        default="/home/bagus/data/idmt/test_cut/engine2_broken",
     )
     parser.add_argument("--feature", type=str,
                         default="mel", choices=["mel", "ifgram"])

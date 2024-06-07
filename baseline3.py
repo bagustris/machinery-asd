@@ -37,6 +37,10 @@ def main(
         anomaly_path = './data/idmt/train_cut/engine2_broken'
         test_path_normal = './data/idmt/test_cut/engine1_good'
         test_path_anomaly = './data/idmt/test_cut/engine2_broken'
+
+    if dataset == "mimii":
+        normal_path = './data/mimii_pump/normal/'
+        anomaly_path = './data/mimii_pump/abnormal/'
     anomaly_files = [
         os.path.join(anomaly_path, file) for file in os.listdir(anomaly_path)
     ]
@@ -44,23 +48,31 @@ def main(
     normal_files = [os.path.join(normal_path, file)
                     for file in os.listdir(normal_path)]
 
-    train_files = normal_files + anomaly_files
-
+    if dataset == "idmt":
+        train_files = normal_files + anomaly_files
     # Create test data files and labels
-    test_files_normal = [
-        os.path.join(
-            test_path_normal,
-            file) for file in os.listdir(test_path_normal)]
-    test_labels_normal = [0 for file in test_files_normal]
-    test_files_abnormal = [
-        os.path.join(
-            test_path_anomaly,
-            file) for file in os.listdir(test_path_anomaly)]
+        test_files_normal = [
+            os.path.join(
+                test_path_normal,
+                file) for file in os.listdir(test_path_normal)]
+        test_labels_normal = [0 for file in test_files_normal]
+        test_files_abnormal = [
+            os.path.join(
+                test_path_anomaly,
+                file) for file in os.listdir(test_path_anomaly)]
 
-    test_labels_abnormal = [1 for file in test_files_abnormal]
-    test_files = test_files_normal + test_files_abnormal
-    test_labels = test_labels_normal + test_labels_abnormal
-    test_labels = np.array(test_labels)
+        test_labels_abnormal = [1 for file in test_files_abnormal]
+        test_files = test_files_normal + test_files_abnormal
+        test_labels = test_labels_normal + test_labels_abnormal
+        test_labels = np.array(test_labels)
+
+    if dataset == "mimii":
+        test_files = normal_files[-len(anomaly_files):] + anomaly_files
+        test_labels = np.hstack(
+            (np.zeros(len(anomaly_files)), np.ones(len(anomaly_files))))
+
+    # Training data files
+        train_files = normal_files[:-len(anomaly_files)] + anomaly_files
 
     # Feature extraction and dataset generation
     n_mels = 64
@@ -115,7 +127,7 @@ def main(
     )
 
     # Perform detection and evaluate model performance
-    detection(reconstruction_errors, test_labels)
+    detection(reconstruction_errors, test_labels, dataset, plot)
 
     # calculate auc and pauc
     auc = roc_auc_score(test_labels, reconstruction_errors)
