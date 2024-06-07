@@ -10,7 +10,7 @@ Link for download:
 - IDMT: <https://zenodo.org/record/7551261>
 - MIMII Pump: <https://www.kaggle.com/datasets/senaca/mimii-pump-sound-dataset>
 
-## IDMT dataset
+## Running the code
 
 IDMT works out of the box with default MSE loss. You only need to run `baseline4.py`.
 
@@ -47,6 +47,10 @@ $ python baseline4.py --dataset mimii --loss ccc --feature reassigned
   --plot             Flag to plot the training loss
   --seed SEED        Seed number
 ```
+
+## Results
+
+## Citation
 
 References:  
 
