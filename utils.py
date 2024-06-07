@@ -2,13 +2,10 @@ from tqdm import tqdm
 import librosa
 import numpy as np
 import tensorflow as tf
-import logger
-import pickle
-# Function to generate training dataset
-
 
 def generate_dataset(files_list, feature="mel", n_mels=64, frames=5,
                      n_fft=1024, hop_length=512):
+    # Function to generate training dataset
     if feature == "mel":
         dims = n_mels * frames
     elif feature == "reassigned":
@@ -81,37 +78,6 @@ def load_sound_file(wav_name, mono=False, channel=0):
     return signal, sampling_rate
 
 
-def save_pickle(filename, save_data):
-    """
-    picklenize the data.
-
-    filename : str
-        pickle filename
-    data : free datatype
-        some data will be picklenized
-
-    return : None
-    """
-    logger.info("save_pickle -> {}".format(filename))
-    with open(filename, 'wb') as sf:
-        pickle.dump(save_data, sf)
-
-
-def load_pickle(filename):
-    """
-    unpicklenize the data.
-
-    filename : str
-        pickle filename
-
-    return : data
-    """
-    logger.info("load_pickle <- {}".format(filename))
-    with open(filename, 'rb') as lf:
-        load_data = pickle.load(lf)
-    return load_data
-
-
 def ccc_loss(y_true, y_pred):
     """Calculate cordordance loss function"""
     # Mean of ground truth and predicted values
@@ -134,6 +100,7 @@ def ccc_loss(y_true, y_pred):
 
 
 def extract_reassigned_freqs(y, sr, frames=5, n_fft=1024):
+    """extract reasiigned spetorgram, already in frames"""
     freqs, times, mags = librosa.reassigned_spectrogram(
         y=y, sr=sr, n_fft=1024)
 

@@ -1,7 +1,6 @@
 # Import required packages
 import numpy as np
 from utils import extract_reassigned_freqs, extract_signal_features
-from tqdm import tqdm
 from utils import load_sound_file
 import matplotlib.pyplot as plt
 

@@ -136,9 +136,9 @@ def main(dataset, feature, loss, plot, seed):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Baseline model for anomaly detection")
-    parser.add_argument("--dataset", type=str, default="idmt", help="Dataset to use for training and testing")
-    parser.add_argument("--feature", type=str, default="mel", help="Feature type to use for training and testing")
-    parser.add_argument("--loss", type=str, default="mse", help="Loss function to use for training the model")
+    parser.add_argument("--dataset", type=str, default="idmt", choices=["idmt", "mimii"], help="Dataset to use for training and testing")
+    parser.add_argument("--feature", type=str, default="mel", choices=["mel", "reassinged"], help="Feature type to use for training and testing")
+    parser.add_argument("--loss", type=str, default="mse", choices=["mse", "ccc"], help="Loss function to use for training the model")
     parser.add_argument("--plot", action="store_true", help="Flag to plot the training loss")
     parser.add_argument("--seed", type=int, default=42, help="Seed for reproducibility")
     args = parser.parse_args()
