@@ -3,13 +3,13 @@ import librosa
 import numpy as np
 import tensorflow as tf
 
-def generate_dataset(files_list, feature="mel", n_mels=64, frames=5,
+def generate_dataset(files_list, dataset, feature="mel", n_mels=64, frames=5,
                      n_fft=1024, hop_length=512):
     # Function to generate training dataset
     if feature == "mel":
         dims = n_mels * frames
     elif feature == "reassigned":
-        dims = 517             # 513/517 is from error message
+        dims = 517 if dataset == 'idmt' else 626  # 513/517 is from error message
     else:
         raise ValueError("Invalid feature type. Choose 'mel' or 'reassigned'")
     

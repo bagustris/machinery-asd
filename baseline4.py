@@ -68,10 +68,6 @@ def load_mimii_dataset(normal_path, anomaly_path):
     return train_files, test_files, test_labels
 
 
-def extract_features(files, feature, n_mels, frames, n_fft, hop_length):
-    return generate_dataset(files, feature, n_mels, frames, n_fft, hop_length)
-
-
 def main(dataset, feature, loss, plot, seed):
     log_dir = "log"
     if not os.path.exists(log_dir):
@@ -113,8 +109,9 @@ def main(dataset, feature, loss, plot, seed):
     frames = 5
     n_fft = 1024
     hop_length = 512
-    train_data = extract_features(
+    train_data = generate_dataset(
         train_files,
+        dataset,
         feature,
         n_mels,
         frames,
