@@ -4,7 +4,7 @@ import numpy as np
 import tensorflow as tf
 
 def generate_dataset(files_list, dataset, feature="mel", n_mels=64, frames=5,
-                     n_fft=1024, hop_length=512):
+                     n_fft=1024, hop_length=512, normalize=False):
     # Function to generate training dataset
     if feature == "mel":
         dims = n_mels * frames
@@ -36,6 +36,13 @@ def generate_dataset(files_list, dataset, feature="mel", n_mels=64, frames=5,
         dataset[features.shape[0] * index: features.shape[0] * (index + 1), :] = (
             features
         )
+
+        if normalize:
+            #     # Normalize the features
+            mean = np.mean(dataset, axis=0)
+            std = np.std(dataset, axis=0)
+            # Add a small epsilon to avoid division by zero
+            dataset = (dataset - mean) / (std + 1e-8)  
 
     return dataset
 
