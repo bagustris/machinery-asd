@@ -72,11 +72,11 @@ def load_mimii_dataset(normal_path, anomaly_path):
 def objective(trial):
     """Objective function for Optuna optimization"""
     args.feature = trial.suggest_categorical("feature", ["mel", "reassigned"])
-    args.lr = trial.suggest_loguniform("lr", 1e-5, 1e-1)
+    args.lr = trial.suggest_float("lr", 1e-5, 1e-1, log=True)
     args.batch_size = trial.suggest_categorical("batch_size", [32, 64, 128, 256, 512])
     args.epochs = trial.suggest_int("epochs", 100, 1000)
     args.loss = trial.suggest_categorical("loss", ["mse", "ccc", "mae", "mape"])
-    args.seed = trial.suggest_int("seed", 0, 100)
+    # args.seed = trial.suggest_int("seed", 0, 100)
     args.normalize = trial.suggest_categorical("normalize", [True, False])
     args.patience = trial.suggest_int("patience", 5, 20) 
    

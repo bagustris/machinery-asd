@@ -9,7 +9,7 @@ def generate_dataset(files_list, dataset, feature="mel", n_mels=64, frames=5,
     if feature == "mel":
         dims = n_mels * frames
     elif feature == "reassigned":
-        dims = 517 if dataset == 'idmt' else 626  # 513/517 is from error message
+        dims = 188 if dataset == 'idmt' else 626  # 513/517 is from error message
     else:
         raise ValueError("Invalid feature type. Choose 'mel' or 'reassigned'")
     
@@ -78,7 +78,7 @@ def extract_signal_features(signal, sr, n_mels=64, frames=5, n_fft=1024):
 
 def load_sound_file(wav_name, mono=False, channel=0):
     # Load sound file
-    signal, sampling_rate = librosa.load(wav_name, sr=None, mono=mono)
+    signal, sampling_rate = librosa.load(wav_name, sr=16000, mono=mono)
     # check if signal is multichannel, get first channel only
     if signal.ndim > 1:
         signal = signal[channel]
