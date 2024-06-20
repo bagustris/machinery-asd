@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import argparse
-from gc import callbacks
 import logging
 import os
 import random
@@ -264,7 +263,9 @@ def main(
     baseline_model.compile(loss=model_loss, optimizer=Adam(learning_rate=lr))
 
     # log model summary
+    baseline_model.summary(print_fn=lambda x: print(x))
     baseline_model.summary(print_fn=lambda x: logger.info(x))
+
     callback = tf.keras.callbacks.EarlyStopping(
         monitor='loss', patience=10, restore_best_weights=True)
     
@@ -324,13 +325,20 @@ def main(
     # perform hyperparameter optimization using Optuna if flag is set
     if args.optuna:
         import optuna
-        study = optuna.create_study(direction="maximize")
+        study = optuna.create_study(
+            direction="maximize",
+            study_name="autoencoder_hyperparameter_optimization",
+            storage="sqlite://db.sqlite3"
+        )
         study.optimize(objective, n_trials=100)
         logger.info(f"Best trial: {study.best_trial}")
         logger.info(f"Best parameters: {study.best_params}")
 
         for key, value in study.best_params.items():
             setattr(args, key, value)
+        
+        print(f"Best parameters: {study.best_params}")
+
     print("Optimization finished")
 
     

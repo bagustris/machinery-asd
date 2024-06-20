@@ -1,9 +1,7 @@
-# Import required packages
 import numpy as np
 from utils import extract_reassigned_freqs, extract_signal_features
 from utils import load_sound_file
 import matplotlib.pyplot as plt
-
 
 def reconstruction(model, test_files, test_labels, feature, n_mels, frames, n_fft, plot):
     """
@@ -22,60 +20,48 @@ def reconstruction(model, test_files, test_labels, feature, n_mels, frames, n_ff
         list: A list of reconstruction errors for the test set.
     """
 
-    # list to store reconstruction errors
     reconstruction_errors = []
+    batch_size = 16
+    batch_features = []
+    batch_labels = []
 
-    # Extract features from all test files in parallel
-    eval_features_list = []
-    for eval_filename in test_files:
+    for eval_filename, label in zip(test_files, test_labels):
         signal, sr = load_sound_file(eval_filename)
         if feature == "mel":
-            eval_features = extract_signal_features(
-                signal, sr, n_mels=n_mels, frames=frames, n_fft=n_fft
-            )
+            eval_features = extract_signal_features(signal, sr, n_mels=n_mels, frames=frames, n_fft=n_fft)
         elif feature == "reassigned":
-            eval_features = extract_reassigned_freqs(
-                signal, sr, frames=frames, n_fft=n_fft
-            )
+            eval_features = extract_reassigned_freqs(signal, sr, frames=frames, n_fft=n_fft)
         else:
-            raise ValueError(
-                "Invalid feature type. Choose 'mel' or 'reassigned'")
-        eval_features_list.append(eval_features)
+            raise ValueError("Invalid feature type. Choose 'mel' or 'reassigned'")
 
-    # Get predictions from our autoencoder in batches
-    batch_size = 32
-    predictions = model.predict(
-        np.vstack(eval_features_list), batch_size=batch_size)
+        batch_features.append(eval_features)
+        batch_labels.append(label)
 
-    # Estimate the reconstruction errors
-    for eval_features, prediction in zip(eval_features_list, predictions):
-        mse = np.mean(np.mean(np.square(eval_features - prediction), axis=1))
-        reconstruction_errors.append(mse)
+        if len(batch_features) == batch_size:
+            predictions = model.predict(np.vstack(batch_features), batch_size=batch_size)
+            for features, prediction in zip(batch_features, predictions):
+                mse = np.mean(np.square(features - prediction))
+                reconstruction_errors.append(mse)
+            batch_features = []
+            batch_labels = []
 
-    # Plot reconstruction errors for normal and anomaly signals
-    data = np.column_stack(
-        (range(len(reconstruction_errors)), reconstruction_errors))
-    # Set bins
-    bin_width = 0.25
-    bins = np.arange(
-        min(reconstruction_errors), max(
-            reconstruction_errors) + bin_width, bin_width
-    )
+    # Process remaining features
+    if batch_features:
+        predictions = model.predict(np.vstack(batch_features), batch_size=len(batch_features))
+        for features, prediction in zip(batch_features, predictions):
+            mse = np.mean(np.square(features - prediction))
+            reconstruction_errors.append(mse)
 
-    # plot histogram of normal (test_labels == 0)
-    # and anomaly signals (test_labels == 0) from data
-    fig, ax = plt.subplots(figsize=(10, 6))
-    ax.hist(data[test_labels == 0, 1], bins=bins,
-            alpha=0.5, color="b", label="Normal")
-    ax.hist(data[test_labels == 1, 1], bins=bins,
-            alpha=0.5, color="r", label="Anomaly")
-
-    # Label the plots
+    # Plotting logic
     if plot:
+        bin_width = 0.25
+        bins = np.arange(min(reconstruction_errors), max(reconstruction_errors) + bin_width, bin_width)
+        fig, ax = plt.subplots(figsize=(10, 6))
+        ax.hist([reconstruction_errors[i] for i in range(len(reconstruction_errors)) if test_labels[i] == 0], bins=bins, alpha=0.5, color="b", label="Normal")
+        ax.hist([reconstruction_errors[i] for i in range(len(reconstruction_errors)) if test_labels[i] == 1], bins=bins, alpha=0.5, color="r", label="Anomaly")
         ax.set_xlabel("Reconstruction error")
         ax.set_ylabel("# Samples")
-        ax.set_title(
-            "Reconstruction error distribution on the testing set", fontsize=16)
+        ax.set_title("Reconstruction error distribution on the testing set", fontsize=16)
         ax.legend()
         plt.tight_layout()
         plt.show()

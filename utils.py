@@ -9,7 +9,7 @@ def generate_dataset(files_list, dataset, feature="mel", n_mels=64, frames=5,
     if feature == "mel":
         dims = n_mels * frames
     elif feature == "reassigned":
-        dims = 188 if dataset == 'idmt' else 626  # 513/517 is from error message
+        dims = 188 if dataset == 'idmt' else 626  # from error message
     else:
         raise ValueError("Invalid feature type. Choose 'mel' or 'reassigned'")
     
