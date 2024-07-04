@@ -76,7 +76,7 @@ def objective(trial):
     args.epochs = trial.suggest_int("epochs", 100, 1000)
     args.loss = trial.suggest_categorical("loss", ["mse", "ccc", "mae", "mape"])
     # args.seed = trial.suggest_int("seed", 0, 100)
-    args.normalize = trial.suggest_categorical("normalize", [True, False])
+    # args.normalize = trial.suggest_categorical("normalize", [True, False])
     args.patience = trial.suggest_int("patience", 5, 20) 
    
     dataset_paths = {
@@ -328,7 +328,7 @@ def main(
         study = optuna.create_study(
             direction="maximize",
             study_name="autoencoder_hyperparameter_optimization",
-            storage="sqlite://db.sqlite3"
+            storage=f"sqlite:///db_{dataset}.sqlite3"
         )
         study.optimize(objective, n_trials=100)
         logger.info(f"Best trial: {study.best_trial}")
