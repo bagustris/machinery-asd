@@ -10,6 +10,14 @@ Link for download:
 - IDMT: <https://zenodo.org/record/7551261>
 - MIMII Pump: <https://www.kaggle.com/datasets/senaca/mimii-pump-sound-dataset>
 
+## Installation
+The code is tested to works on Python 3.8; Python versions higher than 3.8 should works too althouth it is not tested. The following requirements installation is only to make work with my GPU and Python version. As long as all required libraries can be installed, there should be no problem to run the program.
+
+```bash
+pip install -r requirements.txt # gpu
+pip install -r requirements-cpu.txt # cpu
+```
+
 ## Running the code
 
 IDMT works out of the box with default MSE loss. You only need to run `baseline4.py`.
@@ -44,8 +52,8 @@ $ python baseline5.py --dataset mimii --loss ccc --feature reassigned
   --dataset DATASET  Dataset to use for training and testing  {idmt, mimii}
   --feature FEATURE  Feature type to use for training and testing {mel, reassigned}
   --loss LOSS        Loss function to use for training the model {mse, ccc, mae, mape}
-  --plot             Flag to plot the training loss
-  --seed SEED        Seed number
+  --plot             Flag to plot the training loss (store true if flagged)
+  --seed SEED        Seed number (default to 42)
 ```
 
 ## Results
