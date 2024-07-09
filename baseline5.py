@@ -21,7 +21,6 @@ from utils import ccc_loss, generate_dataset
 
 logger = logging.getLogger(__name__)
 
-
 def load_idmt_dataset(
         normal_path,
         anomaly_path,
@@ -73,12 +72,13 @@ def objective(trial):
     args.feature = trial.suggest_categorical("feature", ["mel", "reassigned"])
     args.lr = trial.suggest_float("lr", 1e-5, 1e-1, log=True)
     args.batch_size = trial.suggest_categorical("batch_size", [32, 64, 128, 256, 512])
-    args.epochs = trial.suggest_int("epochs", 100, 1000)
     args.loss = trial.suggest_categorical("loss", ["mse", "ccc", "mae", "mape"])
-    # args.seed = trial.suggest_int("seed", 0, 100)
-    # args.normalize = trial.suggest_categorical("normalize", [True, False])
-    args.patience = trial.suggest_int("patience", 5, 20) 
+    args.patience = trial.suggest_int("patience", 5, 100) 
    
+    np.random.seed(args.seed)
+    tf.random.set_seed(args.seed)
+    random.seed(args.seed)
+    
     dataset_paths = {
         "idmt": {
             "normal_path": './data/idmt/train_cut/engine1_good',
@@ -145,11 +145,11 @@ def objective(trial):
         monitor='loss', patience=args.patience, restore_best_weights=True)
  
     # Model training
-    baseline_hist = baseline_model.fit(
+    baseline_model.fit(
         train_data,
         train_data,
         batch_size=args.batch_size,
-        epochs=args.epochs,
+        epochs=400,   # empirical value
         callbacks=[callback],
         verbose=2)
     
@@ -169,17 +169,55 @@ def objective(trial):
     return auc
 
 
-def main(
-    dataset, feature, loss, plot, seed, normalize, optuna, learning_rate, batch_size, epochs
-):
+def main(args):
+    # set dataset argument and seed
+    dataset = args.dataset
+    seed = args.seed
+  
+    # seed everything
+    start_time = time.time()
+    np.random.seed(seed)
+    tf.random.set_seed(seed)
+    random.seed(seed)
+
+    if args.optuna:
+        import optuna
+        study = optuna.create_study(
+            direction="maximize",
+            study_name="autoencoder_hyperparameter_optimization",
+            storage=f"sqlite:///db_{dataset}_2.sqlite3"
+        )
+        study.optimize(objective, n_trials=100)
+        # logger.info(f"Best trial: {study.best_trial}")
+        print(f"Best parameters: {study.best_params}")
+
+        for key, value in study.best_params.items():
+            setattr(args, key, value)
+        
+        print("Optimization finished")
+
+    # get best params from optimization or filled values
+    feature = args.feature
+    loss = args.loss
+    plot = args.plot
+    normalize = args.normalize
+    learning_rate = args.lr
+    batch_size = args.batch_size
+    patience = args.patience
+
     # log_dir = f'./logs/{dataset}/{feature}/{loss}'
     log_dir = './logs/norm' if normalize else './logs'
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
     logging.basicConfig(
-        filename=f'{log_dir}/{dataset}_{feature}_{loss}_{seed}_{normalize}.log',
+        level=logging.INFO,
         format='%(asctime)s %(message)s',
-        level=logging.INFO)
+        handlers=[
+            logging.FileHandler(f'{log_dir}/{dataset}_{feature}_{loss}_{seed}_{normalize}.log'),
+            logging.StreamHandler()
+        ]
+    )
+
     logger.info('==================Started==================')
     # save arguments inside log
     logger.info(f"Dataset: {dataset}")
@@ -187,12 +225,7 @@ def main(
     logger.info(f"Loss: {loss}")
     logger.info(f"Plot: {plot}")
     logger.info(f"Seed: {seed}")
-    logger.info(f"Normalize: {normalize}")
-
-    start_time = time.time()
-    np.random.seed(seed)
-    tf.random.set_seed(seed)
-    random.seed(seed)
+    logger.info(f"Patience: {patience}")
 
     dataset_paths = {
         "idmt": {
@@ -248,7 +281,7 @@ def main(
 
     lr = learning_rate
     batch_size = batch_size
-    epochs = epochs
+    epochs = 400  # empirical value
 
     # log hyperparameters
     logger.info(f"Learning rate: {lr}")
@@ -263,11 +296,10 @@ def main(
     baseline_model.compile(loss=model_loss, optimizer=Adam(learning_rate=lr))
 
     # log model summary
-    baseline_model.summary(print_fn=lambda x: print(x))
     baseline_model.summary(print_fn=lambda x: logger.info(x))
 
     callback = tf.keras.callbacks.EarlyStopping(
-        monitor='loss', patience=10, restore_best_weights=True)
+        monitor='loss', patience=patience, restore_best_weights=True)
     
     # log callback
     logger.info(f"Callback: {callback}")
@@ -323,24 +355,6 @@ def main(
     logger.info('==================Finished==================')
 
     # perform hyperparameter optimization using Optuna if flag is set
-    if args.optuna:
-        import optuna
-        study = optuna.create_study(
-            direction="maximize",
-            study_name="autoencoder_hyperparameter_optimization",
-            storage=f"sqlite:///db_{dataset}.sqlite3"
-        )
-        study.optimize(objective, n_trials=100)
-        logger.info(f"Best trial: {study.best_trial}")
-        logger.info(f"Best parameters: {study.best_params}")
-
-        for key, value in study.best_params.items():
-            setattr(args, key, value)
-        
-        print(f"Best parameters: {study.best_params}")
-
-    print("Optimization finished")
-
     
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Baseline model for anomaly detection")
@@ -349,7 +363,7 @@ if __name__ == "__main__":
         type=str,
         default="idmt",
         choices=["idmt", "mimii"],
-        help="Dataset to use for training and testing",
+        help="Dataset to use for training and testing (default IDMT)",
     )
     parser.add_argument(
         "--feature",
@@ -361,56 +375,39 @@ if __name__ == "__main__":
     parser.add_argument(
         "--loss",
         type=str,
-        default="mse",
+        default="mae",
         choices=["mse", "ccc", "mae", "mape"],
         help="Loss function to use for training the model",
     )
     parser.add_argument(
         "--plot", action="store_true", help="Flag to plot the training loss"
     )
+
     parser.add_argument("--seed", type=int, default=42, help="Seed for reproducibility")
+
     parser.add_argument(
         "--normalize", action="store_true", help="Normalize the features"
     )
+
     # add optuna argument to optimize hyperparameters
     parser.add_argument(
         "--optuna", action="store_true", help="Use optuna to optimize hyperparameters"
     )
-    parser.add_argument("--n_mels", type=int, default=128, help="Number of mel bands")
-    parser.add_argument("--frames", type=int, default=5, help="Number of frames")
-    parser.add_argument("--n_fft", type=int, default=1024, help="Number of FFT points")
+
+    parser.add_argument("--patience", type=int, default=76, help="Patience for early stopping (default 76 for IDMT)")
+
     parser.add_argument(
-        "--epochs", type=int, default=100, help="Number of training epochs"
+        "--batch_size", 
+        type=int, 
+        default=32, 
+        help="Batch size for training (default 32 for IDMT)"
     )
     parser.add_argument(
-        "--batch_size", type=int, default=512, help="Batch size for training"
-    )
-    parser.add_argument(
-        "--lr", type=float, default=1e-4, help="Learning rate for training"
+        "--lr", 
+        type=float, 
+        default=0.014149396569712902, 
+        help="Learning rate for training"
     )
 
     args = parser.parse_args()
-
-    # print(args)
-    print(f"Dataset: {args.dataset}")
-    print(f"Feature: {args.feature}")
-    print(f"Loss: {args.loss}")
-    print(f"Plot: {args.plot}")
-    print(f"Seed: {args.seed}")
-    print(f"Normalize: {args.normalize}")
-    print(f"Optuna: {args.optuna}")
-    print(f"Learning rate: {args.lr}")
-    print(f"Batch size: {args.batch_size}")
-    print(f"Epochs: {args.epochs}")
-    main(
-        args.dataset,
-        args.feature,
-        args.loss,
-        args.plot,
-        args.seed,
-        args.normalize,
-        args.optuna,
-        args.lr,
-        args.batch_size,
-        args.epochs
-    )
+    main(args)

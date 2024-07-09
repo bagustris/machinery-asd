@@ -15,30 +15,30 @@ Link for download:
 IDMT works out of the box with default MSE loss. You only need to run `baseline4.py`.
 
 ```bash
-$ python baseline4.py
-
-The error threshold is set to be:  105.20362167358398
+$ python baseline5.py
+...
+The error threshold is set to be:  100.9849967956543
               precision    recall  f1-score   support
 
-      Normal       0.71      0.71      0.71       669
-     Anomaly       0.71      0.71      0.71       665
+      Normal       0.99      0.70      0.82       669
+     Anomaly       0.77      0.99      0.87       665
 
-    accuracy                           0.71      1334
-   macro avg       0.71      0.71      0.71      1334
-weighted avg       0.71      0.71      0.71      1334
+    accuracy                           0.85      1334
+   macro avg       0.88      0.85      0.84      1334
+weighted avg       0.88      0.85      0.84      1334
 
 Confusion Matrix
-[[475 194]
- [191 474]]
-AUC:  0.7904199961787878
-PAUC:  0.5313513900398861
-Execution time: 46.87 seconds
+[[468 201]
+ [  5 660]]
+AUC:  0.8907133304112299
+PAUC:  0.6234260420936694
+Execution time: 39060.11 seconds
 ```
 
 If you want to evaluate the MIMII dataset, then use the argument `--dataset mimii`. If you want to use CCC loss function, then use argument `--loss ccc`. Finally, there is an option to use reassigned spectrogram feature in addition to the melspectrogram. Use argument`--feature reassigned`. By default, loss history, distribution of errors, and confusion matrix are not shown. Use argument`--plot` to show these figures.
 
 ```bash
-$ python baseline4.py --dataset mimii --loss ccc --feature reassigned
+$ python baseline5.py --dataset mimii --loss ccc --feature reassigned
 
 # Options:
   --dataset DATASET  Dataset to use for training and testing  {idmt, mimii}
