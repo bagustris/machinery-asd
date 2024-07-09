@@ -57,6 +57,43 @@ $ python baseline5.py --dataset mimii --loss ccc --feature reassigned
 ```
 
 ## Results
+Since I utilized GPU for training, the results is not reproducible. However, the results should be similar to the following if using CPU.
+  
+  ```bash
+  # ./baseline5.py  # CPU
+The error threshold is set to be:  107.05306549072266
+              precision    recall  f1-score   support
+
+      Normal       0.95      0.72      0.82       669
+     Anomaly       0.78      0.96      0.86       665
+
+    accuracy                           0.84      1334
+   macro avg       0.86      0.84      0.84      1334
+weighted avg       0.86      0.84      0.84      1334
+
+Confusion Matrix
+[[485 184]
+ [ 27 638]]
+AUC:  0.8304168492981331
+PAUC:  0.553538081692312
+
+  # ./run_mimii.sh # CPU
+  The error threshold is set to be:  624.5870361328125
+              precision    recall  f1-score   support
+
+      Normal       0.84      0.78      0.81       138
+     Anomaly       0.79      0.86      0.82       138
+
+    accuracy                           0.82       276
+   macro avg       0.82      0.82      0.81       276
+weighted avg       0.82      0.82      0.81       276
+
+Confusion Matrix
+[[107  31]
+ [ 20 118]]
+AUC:  0.8997584541062801
+PAUC:  0.8226268254126179
+  ```
 
 ## Citation
 
