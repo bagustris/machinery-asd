@@ -54,9 +54,9 @@ def reconstruction(model, test_files, test_labels, feature, n_mels, frames, n_ff
 
     # Plotting logic
     if plot:
-        bin_width = 0.25
+        bin_width = 2
         bins = np.arange(min(reconstruction_errors), max(reconstruction_errors) + bin_width, bin_width)
-        fig, ax = plt.subplots(figsize=(10, 6))
+        fig, ax = plt.subplots(figsize=(8, 6))
         ax.hist([reconstruction_errors[i] for i in range(len(reconstruction_errors)) if test_labels[i] == 0], bins=bins, alpha=0.5, color="b", label="Normal")
         ax.hist([reconstruction_errors[i] for i in range(len(reconstruction_errors)) if test_labels[i] == 1], bins=bins, alpha=0.5, color="r", label="Anomaly")
         ax.set_xlabel("Reconstruction error")
