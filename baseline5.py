@@ -66,7 +66,7 @@ def load_mimii_dataset(normal_path, anomaly_path):
         (np.zeros(
             len(anomaly_files)), np.ones(
             len(anomaly_files))))
-    train_files = normal_files[:-len(anomaly_files)] + anomaly_files
+    train_files = normal_files[:-len(anomaly_files)] # only normal for train
 
     return train_files, test_files, test_labels
 
