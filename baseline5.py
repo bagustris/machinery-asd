@@ -322,7 +322,7 @@ def main(args):
     # Plot model loss
     if plot:
         plt.figure(figsize=(8, 5), dpi=100)
-        plt.plot(range(epochs), baseline_hist.history["loss"])
+        plt.plot(range(len(baseline_hist.history["loss"])), baseline_hist.history["loss"])
         plt.xlabel("Epochs")
         plt.ylabel("mse loss")
         plt.title("Model training loss")
