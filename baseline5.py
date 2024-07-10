@@ -21,6 +21,10 @@ from utils import ccc_loss, generate_dataset
 
 logger = logging.getLogger(__name__)
 
+# seed everything
+tf.keras.utils.set_random_seed(42)
+tf.config.experimental.enable_op_determinism()
+
 def load_idmt_dataset(
         normal_path,
         anomaly_path,
@@ -185,7 +189,7 @@ def main(args):
         study = optuna.create_study(
             direction="maximize",
             study_name="autoencoder_hyperparameter_optimization",
-            storage=f"sqlite:///db_{dataset}_2.sqlite3"
+            storage=f"sqlite:///db_{dataset}_3.sqlite3"
         )
         study.optimize(objective, n_trials=100)
         # logger.info(f"Best trial: {study.best_trial}")
