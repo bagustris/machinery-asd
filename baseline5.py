@@ -12,7 +12,7 @@ import tensorflow as tf
 # import matplotlib.pyplot as plt
 from matplotlib import pyplot as plt
 from sklearn.metrics import roc_auc_score
-from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.optimizers.legacy import Adam
 
 from detection import detection
 from models import autoencoder_baseline_mel, autoencoder_baseline_reassigned
