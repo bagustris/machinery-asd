@@ -11,7 +11,7 @@ Link for download:
 - MIMII Pump: <https://www.kaggle.com/datasets/senaca/mimii-pump-sound-dataset>
 
 ## Installation
-The code is tested to works on Python 3.8; Python versions higher than 3.8 should works too althouth it is not tested. The following requirements installation is only to make work with my GPU and Python version. As long as all required libraries can be installed, there should be no problem to run the program.
+The code is tested to work on Python 3.8; Python versions higher than 3.8 should work, too, although it is not tested. The following requirements for installation are only to make it work with my GPU and Python versions. As long as all required libraries can be installed, there should be no problem with running the program.
 
 ```bash
 pip install -r requirements.txt # gpu
@@ -97,6 +97,10 @@ PAUC:  0.8226268254126179
 
 ## Citation
 
-References:  
+```bibtex
+B.T. Atmaja, 2024. "Evaluating Hyperparameter Optimization for Machinery Anomalous Sound Detection", In proc. TENCON 2024 Singapore (Accepted, TBA)
+```
+
+## References:  
 
 1. <https://github.com/naveed88375/AI-ML/tree/master/Anomaly%20Detection%20in%20Industrial%20Equipment>
